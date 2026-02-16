@@ -2,8 +2,9 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import FolderFillIcon from '@rsuite/icons/FolderFill';
 import PageIcon from '@rsuite/icons/Page';
 import './VirtualTreeView.css';
+import { filterTreeData } from './filterTree';
 
-const ROW_HEIGHT = 22;
+const ROW_HEIGHT = 26;
 
 const ChevronIcon = () => (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -13,11 +14,16 @@ const EditIcon = () => (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
 );
 
-export const VirtualTreeView = ({ data, activeKey, onSelect, onOpen, onDataChange, checkable, checkedKeys = [], onCheck }: any) => {
+const CloseIcon = () => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+);
+
+export const VirtualTreeView = ({ data, searchQuery = '', activeKey, onSelect, onOpen, onDataChange, checkable, checkedKeys = [], onCheck }: any) => {
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
   const [scrollTop, setScrollTop] = useState(0);
   const [containerHeight, setContainerHeight] = useState(500);
   const containerRef = useRef<HTMLDivElement>(null);
+  const prevExpandedKeysRef = useRef<Set<string> | null>(null);
 
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -33,6 +39,31 @@ export const VirtualTreeView = ({ data, activeKey, onSelect, onOpen, onDataChang
     return 2;
   };
 
+  const renderData = useMemo(() => filterTreeData(data, searchQuery), [data, searchQuery]);
+
+  useEffect(() => {
+    const q = (searchQuery ?? '').trim();
+    if (q) {
+      if (!prevExpandedKeysRef.current) prevExpandedKeysRef.current = expandedKeys;
+      const next = new Set<string>();
+      const walk = (nodes: any[]) => {
+        nodes.forEach((n: any) => {
+          if (n?.children?.length) {
+            next.add(n.id);
+            walk(n.children);
+          }
+        });
+      };
+      walk(renderData);
+      setExpandedKeys(next);
+      return;
+    }
+    if (prevExpandedKeysRef.current) {
+      setExpandedKeys(prevExpandedKeysRef.current);
+      prevExpandedKeysRef.current = null;
+    }
+  }, [expandedKeys, renderData, searchQuery]);
+
   const visibleRows = useMemo(() => {
     const rows: any[] = [];
     const flatten = (nodes: any[], level = 0) => {
@@ -42,9 +73,9 @@ export const VirtualTreeView = ({ data, activeKey, onSelect, onOpen, onDataChang
         if (isOpen && node.children) flatten(node.children, level + 1);
       });
     };
-    flatten(data);
+    flatten(renderData);
     return rows;
-  }, [data, expandedKeys]);
+  }, [renderData, expandedKeys]);
 
   const startIndex = Math.floor(scrollTop / ROW_HEIGHT);
   const endIndex = Math.min(visibleRows.length - 1, Math.ceil((scrollTop + containerHeight) / ROW_HEIGHT));
@@ -73,9 +104,9 @@ export const VirtualTreeView = ({ data, activeKey, onSelect, onOpen, onDataChang
               onContextMenu={(e) => { e.preventDefault(); setMenu({ visible: true, x: e.clientX, y: e.clientY, item: node }); }}
             >
               <div className="vtree-label-group">
-                <div className={`vtree-expander ${node.isOpen ? 'expanded' : ''}`}><ChevronIcon /></div>
+                <div className={`vtree-expander ${node.isOpen ? 'expanded' : ''}`} style={{ visibility: node.hasChildren ? 'visible' : 'hidden' }}><ChevronIcon /></div>
                 {checkable && <div className={`tree-checkbox ${checkState === 1 ? 'checked' : ''} ${checkState === 2 ? 'indeterminate' : ''}`} onClick={(e) => { e.stopPropagation(); const next = new Set(checkedKeys); const flip = (n:any,v:boolean)=>{v?next.add(n.id):next.delete(n.id); n.children?.forEach((c:any)=>flip(c,v));}; flip(node, checkState!==1); onCheck(Array.from(next)); }} />}
-                <div style={{ color: iconColor, marginRight: '4px', display: 'flex', fontSize: '12px' }}>{node.hasChildren ? <FolderFillIcon /> : <PageIcon />}</div>
+                <div style={{ color: iconColor, marginRight: '6px', display: 'flex', flexShrink: 0 }}>{node.hasChildren ? <FolderFillIcon /> : <PageIcon />}</div>
                 {isEditing ? (
                   <input autoFocus className="tree-input" value={editValue} onChange={e => setEditValue(e.target.value)} onBlur={() => setEditingKey(null)} onKeyDown={e => e.key==='Enter' && setEditingKey(null)} onClick={e => e.stopPropagation()} />
                 ) : (
@@ -84,8 +115,8 @@ export const VirtualTreeView = ({ data, activeKey, onSelect, onOpen, onDataChang
               </div>
               {!node.hasChildren && isSelected && !isEditing && !checkable && (
                 <div className="vtree-actions">
-                  <div className="v-action-btn" onClick={(e) => { e.stopPropagation(); setEditingKey(node.id); setEditValue(node.label); }}><EditIcon /></div>
-                  <div className="v-action-btn" style={{ color: '#ffcdd2' }} onClick={(e) => { e.stopPropagation(); setConfirmItem(node); }}>X</div>
+                  <span className="action-btn" onClick={(e) => { e.stopPropagation(); setEditingKey(node.id); setEditValue(node.label); }}><EditIcon /></span>
+                  <span className="action-btn" style={{ color: '#ffcdd2' }} onClick={(e) => { e.stopPropagation(); setConfirmItem(node); }}><CloseIcon /></span>
                 </div>
               )}
             </div>

@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import FolderFillIcon from '@rsuite/icons/FolderFill';
 import PageIcon from '@rsuite/icons/Page';
 import './TreeView.css';
+import { filterTreeData } from './filterTree';
 
 const ChevronIcon = () => (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -15,7 +16,7 @@ const CloseIcon = () => (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
 );
 
-const TreeItem = ({ item, checkable, selectedId, onSelect, onOpen, checkedIds, toggleCheck, onDelete, onMenu, editingKey, editValue, setEditValue, submitRename, setEditingKey, getCheckState }: any) => {
+const TreeItem = ({ item, checkable, selectedId, onSelect, onOpen, checkedIds, toggleCheck, onDelete, onMenu, editingKey, editValue, setEditValue, submitRename, setEditingKey, getCheckState, forceExpand }: any) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const timerRef = useRef<any>(null);
 
@@ -37,7 +38,7 @@ const TreeItem = ({ item, checkable, selectedId, onSelect, onOpen, checkedIds, t
         onContextMenu={(e) => { e.preventDefault(); if(!checkable) onMenu(e, item, e.clientX, e.clientY); }}
       >
         <div className="tree-label-group">
-          <div className={`tree-expander ${isExpanded ? 'expanded' : ''}`} onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} style={{ visibility: hasChildren ? 'visible' : 'hidden' }}><ChevronIcon /></div>
+          <div className={`tree-expander ${(isExpanded || forceExpand) ? 'expanded' : ''}`} onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} style={{ visibility: hasChildren ? 'visible' : 'hidden' }}><ChevronIcon /></div>
           {checkable && <div className={`tree-checkbox ${checkState === 1 ? 'checked' : ''} ${checkState === 2 ? 'indeterminate' : ''}`} onClick={(e) => { e.stopPropagation(); toggleCheck(item); }} />}
           
           <span style={{ marginRight: '6px', color: iconColor, display: 'flex', flexShrink: 0 }}>
@@ -57,10 +58,10 @@ const TreeItem = ({ item, checkable, selectedId, onSelect, onOpen, checkedIds, t
           </div>
         )}
       </div>
-      {hasChildren && isExpanded && (
+      {hasChildren && (isExpanded || forceExpand) && (
         <div className="tree-children">
           {item.children.map((child: any) => (
-            <TreeItem key={child.id} item={child} checkable={checkable} selectedId={selectedId} onSelect={onSelect} onOpen={onOpen} checkedIds={checkedIds} toggleCheck={toggleCheck} onDelete={onDelete} onMenu={onMenu} editingKey={editingKey} editValue={editValue} setEditValue={setEditValue} submitRename={submitRename} setEditingKey={setEditingKey} getCheckState={getCheckState} />
+            <TreeItem key={child.id} item={child} checkable={checkable} selectedId={selectedId} onSelect={onSelect} onOpen={onOpen} checkedIds={checkedIds} toggleCheck={toggleCheck} onDelete={onDelete} onMenu={onMenu} editingKey={editingKey} editValue={editValue} setEditValue={setEditValue} submitRename={submitRename} setEditingKey={setEditingKey} getCheckState={getCheckState} forceExpand={forceExpand} />
           ))}
         </div>
       )}
@@ -68,13 +69,15 @@ const TreeItem = ({ item, checkable, selectedId, onSelect, onOpen, checkedIds, t
   );
 };
 
-export const TreeView = ({ data, checkable, onDataChange, onOpen }: any) => {
+export const TreeView = ({ data, searchQuery = '', checkable, onDataChange, onOpen }: any) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [checkedIds, setCheckedKeys] = useState<Set<string>>(new Set());
   const [menu, setMenu] = useState<any>({ visible: false, x: 0, y: 0, item: null });
   const [confirmItem, setConfirmItem] = useState<any>(null);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const renderData = useMemo(() => filterTreeData(data, searchQuery), [data, searchQuery]);
+  const forceExpand = !!searchQuery.trim();
 
   const getCheckState = (node: any): number => {
     const currentSet = new Set(checkedIds);
@@ -89,7 +92,7 @@ export const TreeView = ({ data, checkable, onDataChange, onOpen }: any) => {
     <div className="tree-root" onClick={() => setMenu({ visible: false })}>
       <div className="tree-scroll-area">
         <div className="tree-content">
-          {data.map((item: any) => (
+          {renderData.map((item: any) => (
             <TreeItem key={item.id} item={item} checkable={checkable} selectedId={selectedId} onSelect={(i: any) => setSelectedId(i.id)} onOpen={onOpen} checkedIds={checkedIds} toggleCheck={(item: any) => {
               const next = new Set(checkedIds);
               const flip = (node: any, val: boolean) => { val ? next.add(node.id) : next.delete(node.id); node.children?.forEach((c: any) => flip(c, val)); };
@@ -101,7 +104,7 @@ export const TreeView = ({ data, checkable, onDataChange, onOpen }: any) => {
                 onDataChange(update(data));
               }
               setEditingKey(null);
-            }} setEditingKey={setEditingKey} getCheckState={getCheckState} />
+            }} setEditingKey={setEditingKey} getCheckState={getCheckState} forceExpand={forceExpand} />
           ))}
         </div>
       </div>

@@ -19,6 +19,7 @@ const App = () => {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [checkedKeys, setCheckedKeys] = useState<string[]>([]);
   const [isCheckMode, setIsCheckMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div className={`page-layout ${theme}`}>
@@ -40,12 +41,17 @@ const App = () => {
       </div>
 
       <div className="tree-panel">
-        <div className="tree-header">EXPLORER v3.0</div>
+        <div className="tree-header">
+          <input className="tree-search" placeholder="搜索项目..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          {searchQuery.trim() && (
+            <button className="tree-search-clear" onClick={() => setSearchQuery('')} aria-label="清空搜索">×</button>
+          )}
+        </div>
         <div className="tree-body">
           {useVirtual ? (
-            <VirtualTreeView data={data} activeKey={activeKey} onSelect={(n: any) => setActiveKey(n.id)} onOpen={(n:any)=>alert(n.label)} onDataChange={setData} checkable={isCheckMode} checkedKeys={checkedKeys} onCheck={setCheckedKeys} />
+            <VirtualTreeView data={data} searchQuery={searchQuery} activeKey={activeKey} onSelect={(n: any) => setActiveKey(n.id)} onOpen={(n:any)=>alert(n.label)} onDataChange={setData} checkable={isCheckMode} checkedKeys={checkedKeys} onCheck={setCheckedKeys} />
           ) : (
-            <TreeView data={data} activeKey={activeKey} onSelect={(n: any) => setActiveKey(n.id)} onOpen={(n:any)=>alert(n.label)} onDataChange={setData} checkable={isCheckMode} checkedKeys={checkedKeys} onCheck={setCheckedKeys} />
+            <TreeView data={data} searchQuery={searchQuery} activeKey={activeKey} onSelect={(n: any) => setActiveKey(n.id)} onOpen={(n:any)=>alert(n.label)} onDataChange={setData} checkable={isCheckMode} checkedKeys={checkedKeys} onCheck={setCheckedKeys} />
           )}
         </div>
       </div>

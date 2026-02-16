@@ -52,10 +52,18 @@
   width: 330px; height: 450px; display: flex; flex-direction: column;
   background: var(--t-panel); border: 1px solid var(--t-border);
   border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  user-select: none;
 }
 
-.tree-header { padding: 10px 15px; font-size: 11px; font-weight: bold; color: var(--t-text); border-bottom: 1px solid var(--t-line); opacity: 0.6; }
+.tree-header { padding: 10px 12px; font-size: 11px; font-weight: bold; color: var(--t-text); border-bottom: 1px solid var(--t-line); opacity: 0.9; display: flex; align-items: center; gap: 8px; }
+.tree-search { width: 100%; height: 26px; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--t-border); border-radius: 8px; padding: 0 10px; box-sizing: border-box; color: var(--t-text); font-size: 12px; }
+.tree-search { user-select: text; }
+.tree-search::placeholder { color: var(--t-text); opacity: 0.55; }
+.tree-search-clear { width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--t-border); background: transparent; color: var(--t-text); cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; opacity: 0.85; }
+.tree-search-clear:hover { opacity: 1; background: var(--t-hover); }
+.theme-light .tree-search { background: rgba(0, 0, 0, 0.02); }
 .tree-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.tree-root { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 
 /* === 核心：每一行的物理结构 (递归 & 虚拟版共用) === */
 .tree-item-wrapper, .vtree-row-wrapper {
@@ -151,10 +159,10 @@
 .btn-pill { padding: 8px 24px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; }
 .btn-pill-danger { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: #fff; }
 
-.tree-scroll-area, .vtree-container { overflow: auto !important; width: 100%; display: flex !important; flex: 1; }
+.tree-scroll-area, .vtree-container { overflow: auto !important; width: 100%; display: flex !important; flex: 1; min-height: 0; }
 .tree-content, .vtree-content { display: block !important; width: fit-content !important; min-width: 100% !important; }
 .tree-scroll-area::-webkit-scrollbar, .vtree-container::-webkit-scrollbar { height: 4px; width: 4px; }
 .tree-scroll-area::-webkit-scrollbar-thumb, .vtree-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 .tree-children { margin-left: 14px; padding-left: 10px; border-left: 1px solid var(--t-line); }
-.tree-input { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--tree-accent); color: #fff; font-size: 11px; height: 18px; outline: none; padding: 0 4px; width: 100%; border-radius: 3px; }
+.tree-input { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--tree-accent); color: #fff; font-size: 11px; height: 18px; outline: none; padding: 0 4px; width: 100%; border-radius: 3px; user-select: text; }
 * { -webkit-tap-highlight-color: transparent !important; outline: none !important; }
