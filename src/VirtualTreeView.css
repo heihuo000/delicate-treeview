@@ -1,0 +1,35 @@
+/* 虚拟列表版同步主题变量 */
+.vtree-container {
+  height: 100%; width: 100%; overflow: auto; background: var(--tree-panel-bg); position: relative;
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+  user-select: none !important; -webkit-tap-highlight-color: transparent;
+  transition: background 0.3s ease;
+}
+
+.vtree-row-wrapper {
+  display: flex; align-items: center; justify-content: space-between; padding: 0 8px; cursor: pointer; box-sizing: border-box; white-space: nowrap; position: absolute; left: 0; width: max-content; min-width: 100%;
+  clip-path: inset(0 6px round var(--tree-radius));
+  -webkit-clip-path: inset(0 6px round var(--tree-radius));
+  color: var(--tree-text);
+  letter-spacing: -0.01em;
+}
+
+.vtree-row-wrapper::before { content: ''; position: absolute; inset: 0 6px; border-radius: var(--tree-radius); z-index: -1; border: 1px solid transparent; }
+.vtree-row-wrapper:hover::before { background-color: var(--tree-hover-bg); border: 1px solid rgba(255, 255, 255, 0.08); }
+.vtree-row-wrapper.selected::before { background: var(--tree-selection-gradient); border: 1px solid rgba(255, 255, 255, 0.15); }
+
+.vtree-row-wrapper.selected .vtree-label { color: var(--tree-text-active) !important; font-weight: 600; }
+.vtree-label { font-size: 11px; flex-shrink: 0; pointer-events: none !important; }
+
+/* 保持其他样式同步变量... */
+.tree-checkbox { width: 13px; height: 13px; border: 1px solid #4b5563; border-radius: 3px; margin-right: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tree-checkbox.checked { background: var(--tree-accent); border: 1.2px solid #fff; }
+.tree-checkbox.indeterminate { background: var(--tree-accent); border: 1.2px solid #fff; }
+.tree-checkbox.indeterminate::after { content: ''; width: 7px; height: 1.5px; background: #fff; }
+.vtree-actions { display: flex; gap: 10px; flex-shrink: 0 !important; opacity: 0; margin-left: auto; padding-right: 10px; }
+.vtree-row-wrapper:hover .vtree-actions, .vtree-row-wrapper.selected .vtree-actions { opacity: 1; }
+.v-action-btn { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); font-size: 10px; }
+.vtree-expander { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; margin-right: 2px; color: #666; transition: transform 0.2s; }
+.vtree-expander.expanded { transform: rotate(90deg); }
+.vtree-container::-webkit-scrollbar { width: 3px; height: 3px; }
+.vtree-container::-webkit-scrollbar-thumb { background: #333; }
