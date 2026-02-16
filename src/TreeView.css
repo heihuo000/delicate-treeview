@@ -1,0 +1,160 @@
+/* Delicate Tree - Ultimate CSS Master */
+
+:root {
+  --tree-radius: 10px;
+  --tree-accent: #007fff;
+  --tree-selection-gradient: linear-gradient(90deg, #007fff 0%, #005bb5 100%);
+}
+
+/* === 三大主题定义 === */
+.theme-dark {
+  --t-bg: #0b0d11;
+  --t-panel: #161922;
+  --t-border: #2d334a;
+  --t-text: #cbd5e1;
+  --t-text-active: #ffffff;
+  --t-hover: rgba(255, 255, 255, 0.06);
+  --t-line: #2d334a;
+}
+
+.theme-neon {
+  --t-bg: #000000;
+  --t-panel: #050505;
+  --t-border: #003b00;
+  --t-text: #00ff41;
+  --t-text-active: #ffffff;
+  --t-accent: #00ff41;
+  --t-selection-gradient: linear-gradient(90deg, #008f11 0%, #003b00 100%);
+  --t-hover: rgba(0, 255, 65, 0.1);
+  --t-line: #003b00;
+}
+
+.theme-light {
+  --t-bg: #f3f4f6;
+  --t-panel: #ffffff;
+  --t-border: #e5e7eb;
+  --t-text: #374151;
+  --t-text-active: #ffffff;
+  --t-accent: #6366f1;
+  --t-selection-gradient: linear-gradient(90deg, #6366f1 0%, #4338ca 100%);
+  --t-hover: rgba(99, 102, 241, 0.05);
+  --t-line: #e5e7eb;
+}
+
+/* === 页面框架与 Panel 锁定 === */
+.page-layout {
+  display: flex; flex-direction: column; align-items: center;
+  min-height: 100vh; background-color: var(--t-bg);
+  padding: 40px 20px; box-sizing: border-box; transition: background 0.3s;
+}
+
+.tree-panel {
+  width: 330px; height: 450px; display: flex; flex-direction: column;
+  background: var(--t-panel); border: 1px solid var(--t-border);
+  border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+
+.tree-header { padding: 10px 15px; font-size: 11px; font-weight: bold; color: var(--t-text); border-bottom: 1px solid var(--t-line); opacity: 0.6; }
+.tree-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+
+/* === 核心：每一行的物理结构 (递归 & 虚拟版共用) === */
+.tree-item-wrapper, .vtree-row-wrapper {
+  display: flex !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: space-between !important;
+  white-space: nowrap !important; padding: 0 12px; margin: 2px 8px; min-height: 26px; cursor: pointer;
+  position: relative; z-index: 1; 
+  width: max-content !important; min-width: calc(100% - 16px) !important;
+  border-radius: var(--tree-radius); clip-path: inset(0 round var(--tree-radius));
+  color: var(--t-text); transition: none !important;
+}
+
+.tree-item-wrapper::before, .vtree-row-wrapper::before {
+  content: ''; position: absolute; inset: 0; border-radius: var(--tree-radius);
+  background-color: transparent; border: 1px solid transparent; z-index: -1;
+}
+
+/* 状态覆盖 */
+.tree-item-wrapper:hover::before, .vtree-row-wrapper:hover::before { background-color: var(--t-hover); }
+
+/* 选中高亮带描边 */
+.tree-item-wrapper.selected::before, .vtree-row-wrapper.selected::before {
+  background: var(--tree-selection-gradient) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.tree-item-wrapper.selected, .vtree-row-wrapper.selected {
+  color: var(--t-text-active) !important;
+}
+
+.tree-item-wrapper.selected .tree-label, .vtree-row-wrapper.selected .vtree-label {
+  font-weight: 600 !important;
+}
+
+/* === 核心：勾选框精致回归 === */
+.tree-checkbox {
+  width: 14px; height: 14px; border: 1px solid #4b5563; border-radius: 4px; margin-right: 8px;
+  display: flex !important; align-items: center; justify-content: center; flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.3); position: relative;
+}
+/* 触控热区 */
+.tree-checkbox::before { content: ''; position: absolute; inset: -10px; z-index: 10; cursor: pointer; }
+
+.tree-checkbox.checked, .tree-checkbox.indeterminate {
+  background: var(--tree-accent) !important;
+  border: 1.5px solid #ffffff !important;
+  box-shadow: 0 0 8px rgba(0, 127, 255, 0.4);
+}
+
+.tree-checkbox.checked::after {
+  content: ''; width: 3.5px; height: 7.5px; border: 2px solid #fff; border-top: 0; border-left: 0; transform: rotate(45deg) translate(-0.5px, -1px);
+}
+
+.tree-checkbox.indeterminate::after {
+  content: ''; width: 8px; height: 2px; background: #fff; border-radius: 1px;
+}
+
+/* 内部元素对齐 */
+.tree-label-group, .vtree-label-group {
+  display: flex !important; align-items: center !important; flex-wrap: nowrap !important;
+  flex: 1 0 auto !important; min-width: 0; margin-right: 40px !important;
+}
+
+.tree-label, .vtree-label { font-size: 12px; white-space: nowrap !important; pointer-events: none !important; color: inherit; }
+
+/* 精致按钮组 */
+.tree-actions, .vtree-actions { display: flex !important; gap: 12px; opacity: 0; flex-shrink: 0 !important; margin-left: auto; }
+.tree-item-wrapper:hover .tree-actions, .tree-item-wrapper.selected .tree-actions,
+.vtree-row-wrapper:hover .vtree-actions, .vtree-row-wrapper.selected .vtree-actions { opacity: 1; }
+
+.action-btn { 
+  width: 22px; height: 22px; display: flex !important; align-items: center; justify-content: center;
+  border-radius: 6px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); 
+  cursor: pointer; color: #64748b; transition: all 0.2s;
+}
+.tree-item-wrapper.selected .action-btn, .vtree-row-wrapper.selected .action-btn { color: #fff; }
+.action-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--tree-accent); color: #fff; }
+.action-btn svg { width: 12px; height: 12px; stroke: currentColor; }
+
+.tree-expander, .vtree-expander { width: 16px; height: 16px; display: flex !important; align-items: center; justify-content: center; margin-right: 2px; color: #666; transition: transform 0.2s; flex-shrink: 0; }
+.tree-expander.expanded, .vtree-expander.expanded { transform: rotate(90deg); }
+
+/* 浮动组件：菜单 & 模态框 */
+.tree-menu {
+  position: fixed; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px; padding: 6px; min-width: 150px; z-index: 10000; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+}
+.menu-item { padding: 8px 12px; font-size: 12px; cursor: pointer; color: #cbd5e1; border-radius: 8px; display: flex; align-items: center; gap: 8px; }
+.menu-item:hover { background: var(--tree-accent); color: #fff; }
+
+.tree-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 11000; }
+.tree-modal { background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 20px; width: 300px; text-align: center; color: #fff; }
+.btn-pill { padding: 8px 24px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; }
+.btn-pill-danger { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: #fff; }
+
+.tree-scroll-area, .vtree-container { overflow: auto !important; width: 100%; display: flex !important; flex: 1; }
+.tree-content, .vtree-content { display: block !important; width: fit-content !important; min-width: 100% !important; }
+.tree-scroll-area::-webkit-scrollbar, .vtree-container::-webkit-scrollbar { height: 4px; width: 4px; }
+.tree-scroll-area::-webkit-scrollbar-thumb, .vtree-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+.tree-children { margin-left: 14px; padding-left: 10px; border-left: 1px solid var(--t-line); }
+.tree-input { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--tree-accent); color: #fff; font-size: 11px; height: 18px; outline: none; padding: 0 4px; width: 100%; border-radius: 3px; }
+* { -webkit-tap-highlight-color: transparent !important; outline: none !important; }
